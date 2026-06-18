@@ -1,0 +1,28 @@
+server:
+    port: 8082
+
+spring:
+    application:
+        name: messaging-service
+    datasource:
+        url: jdbc:postgresql://localhost:5432/slackclone
+        username: postgres
+        password: postgres
+    jpa:
+        hibernate:
+            ddl-auto: update
+        show-sql: true
+
+eureka:
+    client:
+        service-url:
+            defaultZone: http://localhost:8761/eureka/
+
+jwt:
+    secret: mySuperSecretJwtKeyThatMustBeAtLeast32CharactersLong
+    expiration: 86400000
+
+logging:
+  level:
+    org.springframework.web.socket: DEBUG
+    org.springframework.messaging: DEBUG
