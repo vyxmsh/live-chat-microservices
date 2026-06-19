@@ -1,6 +1,7 @@
 package com.slackclone.messaging_service.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -11,6 +12,12 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+
+    WebSocketConfig(WebSocketAuthInterceptor webSocketAuthInterceptor) {
+        this.webSocketAuthInterceptor = webSocketAuthInterceptor;
+    }
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic","/queue");
@@ -20,7 +27,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-        .setAllowedOriginPatterns("*");
+        .setAllowedOriginPatterns("http://localhost:3000", "http://*.vercel.app")
+        .withSockJS();
+    }
+
+    @Override
+    public void configureClientInboundChannel (ChannelRegistration registration)
+    {
+        registration.interceptors(webSocketAuthInterceptor);
     }
     
 }

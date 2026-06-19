@@ -31,15 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-target/
-.idea/
-.vscode/
-*.iml
-
-application-local.yml
-.env
-
-logs/
-*.log
-
