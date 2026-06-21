@@ -28,8 +28,8 @@ public class ChannelController {
     }
 
     @PostMapping
-    public ResponseEntity<Channel> createChannel(@RequestBody ChannelRequest request){
-        Channel channel = channelService.createChannel(request);
+    public ResponseEntity<Channel> createChannel(@RequestBody ChannelRequest request, @RequestHeader("X-User-Id") Long userId){
+        Channel channel = channelService.createChannel(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(channel);
     }
 

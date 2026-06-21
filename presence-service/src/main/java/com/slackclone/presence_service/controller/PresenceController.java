@@ -26,6 +26,9 @@ public class PresenceController {
 
     @PostMapping("/heartbeat")
     public ResponseEntity<Void> heartbeat(@RequestHeader("X-User-Id") String userId){
+        
+        System.out.println("Reciever userId = "+ userId);
+
         redis.opsForValue().set(PREFIX + userId, "online",TTL);
 
         return ResponseEntity.ok().build();

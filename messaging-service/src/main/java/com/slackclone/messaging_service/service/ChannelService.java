@@ -15,11 +15,11 @@ public class ChannelService {
         this.channelRepository = channelRepository;
     }
 
-    public Channel createChannel(ChannelRequest request) {
+    public Channel createChannel(ChannelRequest request, Long userId) {
         Channel channel = new Channel(
                 request.getName(),
                 request.getDescription(),
-                request.getCreatedBy()
+                userId
         );
         return channelRepository.save(channel);
     }

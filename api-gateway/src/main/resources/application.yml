@@ -1,0 +1,70 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: API-GATEWAY
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      routes:
+        # Auth service — open routes, no JWT filter needed (filter already skips these paths)
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/**
+
+        # Messaging service — REST endpoints
+        - id: messaging-service-rest
+          uri: lb://MESSAGING-SERVICE
+          predicates:
+            - Path=/api/channels/**, /api/messages/**
+
+        # Messaging service — WebSocket (must be separate route)
+        - id: messaging-service-ws
+          uri: lb:ws://MESSAGING-SERVICE
+          predicates:
+            - Path=/ws/**
+
+        # Presence service
+        - id: presence-service
+          uri: lb://PRESENCE-SERVICE
+          predicates:
+            - Path=/api/presence/**
+
+        # Notification service
+        - id: notification-service
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/api/notifications/**
+
+      # CORS — add your Vercel URL on Day 5
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "https://*.vercel.app"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+jwt:
+  secret: mySuperSecretJwtKeyThatMustBeAtLeast32CharactersLong
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
