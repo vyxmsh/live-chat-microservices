@@ -26,7 +26,7 @@ export interface PagedMessage{
     hasMore: boolean;
 }
 
-export interface Authresponse{
+export interface AuthResponse{
     token: string;
     username: string;
 }
