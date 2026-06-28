@@ -9,28 +9,41 @@ import { Channel } from '../lib/types';
 export default function Sidebar() {
     const [channels, setChannels] = useState<Channel[]>([]);
     const [newChannelName, setNewChannelName] = useState('');
+    const [newChannelDescription, setNewChannelDescription] = useState('');
     const [creating, setCreating] = useState(false);
     const pathName = usePathname();
     const router = useRouter();
 
-    const username = typeof window !== 'undefined' ? localStorage.getItem('username') ?? '' : '';
+    const [username, setUsername] = useState("");
 
+useEffect(() => {
+    setUsername(localStorage.getItem("username") ?? "");
+}, []);
     useEffect(() => {
-        api.get<Channel[]>('/api/channels')
-           .then((r) => setChannels(r.data))
-           .catch(console.error);
-    }, []);
+    console.log("Loading channels...");
+
+    api.get<Channel[]>("/api/channels")
+        .then((r) => {
+            console.log("Channels loaded:", r.data);
+            setChannels(r.data);
+        })
+        .catch((err) => {
+            console.error("CHANNEL ERROR", err.response);
+        });
+}, []);
 
     const createChannel = async() => {
         if(!newChannelName.trim()) return;
         try{
             const res = await api.post<Channel>('/api/channels',{
                 name: newChannelName.trim(),
+                description: newChannelDescription.trim(),
             });
         setChannels((prev) => [...prev,res.data]);
         setNewChannelName('');
+        setNewChannelDescription('');
         setCreating(false);
-        router.push('/app/channel/${res.data.id}');
+        router.push(`/app/channel/${res.data.id}`);
         }catch (err){
             console.error('Failed to create channel:', err);
         }
@@ -68,18 +81,24 @@ export default function Sidebar() {
         {/* New channel input */}
         {creating && (
           <div className="px-4 mb-2 flex gap-1">
-            <input
-              autoFocus
-              className="flex-1 bg-gray-700 text-white text-sm rounded px-2 py-1
-                         focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="channel-name"
-              value={newChannelName}
-              onChange={(e) => setNewChannelName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') createChannel();
-                if (e.key === 'Escape') setCreating(false);
-              }}
-            />
+            <div className="flex flex-col gap-2 w-full">
+  <input
+    autoFocus
+    className="bg-gray-700 text-white text-sm rounded px-2 py-1
+               focus:outline-none focus:ring-1 focus:ring-indigo-500"
+    placeholder="Channel name"
+    value={newChannelName}
+    onChange={(e) => setNewChannelName(e.target.value)}
+  />
+
+  <input
+    className="bg-gray-700 text-white text-sm rounded px-2 py-1
+               focus:outline-none focus:ring-1 focus:ring-indigo-500"
+    placeholder="Description"
+    value={newChannelDescription}
+    onChange={(e) => setNewChannelDescription(e.target.value)}
+  />
+</div>
             <button
               onClick={createChannel}
               className="text-indigo-400 hover:text-indigo-300 text-sm"

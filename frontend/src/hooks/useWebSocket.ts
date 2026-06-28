@@ -13,15 +13,15 @@ export function useWebSocket({ channelId, onMessage}: UseWebSocketOptions){
     const [connected,setConnected] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.item('token');
+        const token = localStorage.getItem('token');
         if(!token || !channelId) return;
 
         const client = new Client ({
             webSocketFactory: () => 
-                new SockJS('${process.env.NEXT_PUBLIC_API_URL}/ws'),
+                new SockJS("/ws"),
 
             connectHeaders:{
-                Authorization: 'Bearer ${token}',
+                Authorization: `Bearer ${token}`,
 
             },
 
@@ -29,7 +29,7 @@ export function useWebSocket({ channelId, onMessage}: UseWebSocketOptions){
                 setConnected(true);
 
                 //subscribe to this channel's topic
-                client.subscribe('/topic/channel.${channelId}',
+                client.subscribe(`/topic/channel.${channelId}`,
                     (frame: IMessage) => {
                         const message: Message = JSON.parse(frame.body);
                         onMessage(message);

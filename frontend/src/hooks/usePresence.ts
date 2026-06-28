@@ -13,7 +13,7 @@ export function usePresence(userIds: number[]){
             const results = await Promise.all(
                 userIds.map((id) => 
                 api
-                .get('/api/presence/${id}')
+                .get(`/api/presence/${id}`)
                 .then((r)=>({id, online: r.data.online as boolean}))
                 .catch(() => ({id, online: false}))
             )
@@ -39,11 +39,16 @@ export function usePresence(userIds: number[]){
 export function useHeartbeat() {
     useEffect(() => {
         const sendHeartbeat = () => {
-            api.post('/api/presence/heartbeat').catch(() => {});
-        };
+    console.log("Sending heartbeat...");
+
+    api.post("/api/presence/heartbeat")
+        .then(() => console.log("Heartbeat OK"))
+        .catch((err) => console.error("Heartbeat failed:", err.response));
+};
 
         sendHeartbeat();
         const interval = setInterval(sendHeartbeat,30000);
         return () => clearInterval(interval);
     },[]);
+    
 }

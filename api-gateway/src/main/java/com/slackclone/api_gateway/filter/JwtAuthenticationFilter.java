@@ -22,10 +22,15 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered{
     private final JwtUtil jwtUtil;
 
     //paths that bypass Jwt Validation
-    private static final List<String> OPEN_ROUTES = List.of("/api/auth/login", "/api/auth/register");
-    public JwtAuthenticationFilter(JwtUtil jwtUtil){
-        this.jwtUtil = jwtUtil;
-    } 
+   private static final List<String> OPEN_ROUTES = List.of(
+    "/api/auth/login",
+    "/api/auth/register",
+    "/ws"
+); 
+
+public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    this.jwtUtil = jwtUtil;
+}
 
 @Override
 public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain){
@@ -41,13 +46,20 @@ public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain){
     //We still need an authorization header here for initial http upgrade request
     String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
 
-    if(authHeader==null || !authHeader.startsWith("Bearer"))
+    System.out.println("================================");
+    System.out.println("PATH: " + path);
+    System.out.println("AUTH HEADER: " + authHeader);
+
+    if(authHeader==null || !authHeader.startsWith("Bearer "))
     {
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
         return exchange.getResponse().setComplete();
     }
 
     String token = authHeader.substring(7);
+
+    System.out.println("TOKEN: " + token);
+    System.out.println("VALID TOKEN: " + jwtUtil.validateToken(token));
 
     if(!jwtUtil.validateToken(token)){
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -72,4 +84,3 @@ public int getOrder(){
     return -1; //Run before all other filters
 }
 }
-

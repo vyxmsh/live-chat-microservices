@@ -5,22 +5,33 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
+
+    console.log("================================");
+    console.log("REQUEST:", config.url);
+    console.log("TOKEN:", token);
+
     if (token) {
-        config.headers.Authorization = 'Bearer ${token}';
+        config.headers.Authorization = `Bearer ${token}`;
+        console.log("AUTH HEADER:", config.headers.Authorization);
     }
+
+    console.log("================================");
+
     return config;
 });
+
 
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if(error.response?.status === 401){
-            localStorage.removeItem('token');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('username');
-            window.location.href = '/login';
-        }
+        console.log("========== RESPONSE ERROR ==========");
+        console.log("URL:", error.config?.url);
+        console.log("METHOD:", error.config?.method);
+        console.log("STATUS:", error.response?.status);
+        console.log("DATA:", error.response?.data);
+        console.log("===================================");
+
         return Promise.reject(error);
     }
 );

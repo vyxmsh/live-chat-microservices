@@ -31,27 +31,46 @@ export default function MessageFeed({channelId, channelName}: MessageFeedProps){
         if(loadingHistory) return;
         setLoadingHistory(true);
         try {
-            const res = await api.get<PagedMessage>(
-                `/api/channels/${channelId}/messages?pages=${pageNum}`
-            );
-        const reversed = [...res.data.messages].reverse();//oldest first
-        setMessages((prev) => [...reversed, ...prev]);
-        setHasMore(res.data.hasMore);
-        } catch (err) {
-            console.error('Failed to load message:', err);
-        } finally {
+          console.log("Loading page:", pageNum);
+          const res = await api.get<Message[]>(
+        `/api/channels/${channelId}/messages?page=${pageNum}`
+    );
+    console.log(res.data);
+
+    const reversed = [...res.data].reverse();
+    if(pageNum === 0){
+      setMessages(reversed);
+    } else{
+      //older history prepend and remove duplicates
+      setMessages((prev) => {
+        const map = new Map<number, Message>();
+
+        [...reversed, ...prev].forEach((msg)=>{
+        map.set(msg.id,msg);});
+
+        return Array.from(map.values());
+      });
+    }
+
+    setHasMore(res.data.length === 20);
+} catch (err) {
+    console.error("Failed to load message:", err);
+} finally {
             setLoadingHistory(false);
         }
     }, [channelId, loadingHistory]);
 
     //reset and load when channel changes
     useEffect(() => {
+      console.log("Channel changed:", channelId);
+
         setMessages([]);
         setPage(0);
         setHasMore(true);
         isFirstLoad.current = true;
+
         loadMessage(0);
-    },[channelId]);
+    },[channelId, loadMessage]);
 
     //scroll to bottom on first load only
     useEffect(() => {
@@ -74,10 +93,19 @@ export default function MessageFeed({channelId, channelName}: MessageFeedProps){
 
     //New real-time message via websocket
     const handleNewMessage = useCallback((message: Message) => {
-        setMessages((prev) =>[...prev, message]);
+        setMessages((prev) =>{
         //scroll to bottom when a new message arrives
-        setTimeout(() => bottomRef.current?.scrollIntoView({behavior: 'smooth'}),50);
-    }, []);
+        if(prev.some((m) => m.id === message.id))
+        {
+          return prev;
+        }
+
+        return [...prev, message]; });
+
+        setTimeout(() =>{
+          bottomRef.current?.scrollIntoView({ behavior : "smooth" });
+        }, 50);
+      },[]);
 
     const { connected, sendMessage} = useWebSocket ({
         channelId,
@@ -92,6 +120,20 @@ export default function MessageFeed({channelId, channelName}: MessageFeedProps){
             content,
         });
     };
+    console.log(messages);
+    console.table(messages);
+
+    useEffect(() => {
+        setMessages((prev)=>{
+          const map = new Map<number,Message>();
+          
+          prev.forEach((msg)=> {
+            map.set(msg.id, msg);
+          });
+
+          return Array.from(map.values());
+        });
+    },[]);
 
     return (
     <div className="flex flex-col h-full bg-gray-900">

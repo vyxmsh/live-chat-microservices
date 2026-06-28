@@ -15,29 +15,36 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        console.log("Submit clicked!");
+
         setError('');
         setLoading(true);
 
-        try{
-            const res = await api.post<AuthResponse>('/api/auth/login',{
+        try {
+            const res = await api.post<AuthResponse>('/api/auth/login', {
                 username,
                 password,
             });
 
-            localStorage.setItem('token', res.data.token);
-            localStorage.setItem('username', res.data.username);
+            console.log("LOGIN SUCCESS:", res.data);
 
-            //Decode userId from JWT payload(base 64 middle section)
-            const payload  = JSON.parse(atob(res.data.token.split('.')[1]));
-            localStorage.setItem('userID', payload.userId?.toString()?? '');
+            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("username", res.data.username);
+
+            const payload = JSON.parse(atob(res.data.token.split('.')[1]));
+            localStorage.setItem("userId", payload.userId?.toString() ?? "");
 
             router.push('/app');
-        } catch {
-            setError('Invalid username or password');
+        } catch (err) {
+            console.error("LOGIN ERROR:", err);
+            setError("Login failed");
         } finally {
             setLoading(false);
         }
     };
+
+
 return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center">
       <div className="bg-gray-800 rounded-xl p-8 w-full max-w-sm">

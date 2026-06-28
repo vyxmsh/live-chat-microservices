@@ -15,7 +15,7 @@ public class Channel {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = true, length = 1000)
     private String description;
 
     @Column(name = "created_by", nullable = false)
