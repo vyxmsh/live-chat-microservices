@@ -120,8 +120,6 @@ export default function MessageFeed({channelId, channelName}: MessageFeedProps){
             content,
         });
     };
-    console.log(messages);
-    console.table(messages);
 
     useEffect(() => {
         setMessages((prev)=>{
